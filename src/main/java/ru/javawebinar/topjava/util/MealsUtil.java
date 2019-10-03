@@ -41,6 +41,7 @@ public class MealsUtil {
         System.out.println(getFilteredByExecutor(meals, startTime, endTime, DEFAULT_CALORIES_PER_DAY));
         System.out.println(getFilteredByFlatMap(meals, startTime, endTime, DEFAULT_CALORIES_PER_DAY));
         System.out.println(getFilteredByCollector(meals, startTime, endTime, DEFAULT_CALORIES_PER_DAY));
+
     }
 
     public static List<MealTo> getFiltered(List<Meal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
