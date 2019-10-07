@@ -13,10 +13,5 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         System.out.format("Hello Topjava Enterprise!");
-
-        List<MealTo> mealList = MealsUtil.getFiltered(new MealDataArryaList().meals, LocalTime.MIN, LocalTime.MAX, MealsUtil.getDefaultCaloriesPerDay());
-        for (MealTo mealTo: mealList){
-            System.out.println(mealTo.getId());
-        }
     }
 }
