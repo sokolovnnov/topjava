@@ -1,7 +1,7 @@
 package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
-import ru.javawebinar.topjava.MealDataArray;
+import ru.javawebinar.topjava.dao.MealMapDao;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.MealTo;
 import ru.javawebinar.topjava.util.MealsUtil;
@@ -20,7 +20,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class MealServlet extends HttpServlet {
     private static final Logger log = getLogger(MealServlet.class);
 
-    private MealDataArray mealDataArrayList = new MealDataArray();
+    private MealMapDao mealMapDao = new MealMapDao();
+
+    //todo switch!!
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -33,21 +35,21 @@ public class MealServlet extends HttpServlet {
 
         if (action.equals("delete")) {
             int id = Integer.parseInt(req.getParameter("id"));
-            mealDataArrayList.delete(id);
+            mealMapDao.delete(mealMapDao.getById(id));
             resp.sendRedirect(req.getContextPath() + "/meals");
         }
 
-        if (action.equals("edit")){
+        if (action.equals("edit")) {
             int id = Integer.parseInt(req.getParameter("id"));
-            mealDataArrayList.update(id, localDateTime, description, calories);
+            log.debug("1");
+            mealMapDao.update(new Meal(id, localDateTime, description, calories));
+            log.debug("2");
             resp.sendRedirect(req.getContextPath() + "/meals");
         }
 
         if (action.equals("new")) {
-            Meal nMeal = mealDataArrayList.create(localDateTime,description,calories);
-            mealDataArrayList.addToMemory(nMeal);
+            mealMapDao.create(new Meal(mealMapDao.mealDataArray.atomicCount.incrementAndGet(), localDateTime, description, calories));
             resp.sendRedirect(req.getContextPath() + "/meals");
-
         }
     }
 
@@ -55,11 +57,10 @@ public class MealServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         log.debug("redirect to meal3");
 
-        List<MealTo> mealList = MealsUtil.getFiltered(mealDataArrayList.meals, LocalTime.MIN,
+        List<MealTo> mealList = MealsUtil.getFiltered(mealMapDao.getAll(), LocalTime.MIN,
                 LocalTime.MAX, MealsUtil.getDefaultCaloriesPerDay());
 
-        request.setAttribute("mealList", mealList );
+        request.setAttribute("mealList", mealList);
         request.getRequestDispatcher("/meals.jsp").forward(request, response);
-        //response.sendRedirect("meals.jsp");
     }
 }
