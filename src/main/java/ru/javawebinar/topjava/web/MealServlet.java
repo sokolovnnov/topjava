@@ -25,37 +25,56 @@ public class MealServlet extends HttpServlet {
     //todo switch!!
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         req.setCharacterEncoding("utf-8");
 
         String action = req.getParameter("button");
-        LocalDateTime localDateTime = LocalDateTime.parse(req.getParameter("datetime"));
-        int calories = Integer.parseInt(req.getParameter("calories"));
-        String description = req.getParameter("description");
 
         if (action.equals("delete")) {
             int id = Integer.parseInt(req.getParameter("id"));
             mealMapDao.delete(mealMapDao.getById(id));
             resp.sendRedirect(req.getContextPath() + "/meals");
+            return;
         }
 
         if (action.equals("edit")) {
             int id = Integer.parseInt(req.getParameter("id"));
-            log.debug("1");
-            mealMapDao.update(new Meal(id, localDateTime, description, calories));
-            log.debug("2");
-            resp.sendRedirect(req.getContextPath() + "/meals");
+            Meal mealForUpd = mealMapDao.getById(id);
+            req.setAttribute("mealForUpd", mealForUpd);
+            req.setAttribute("action", action);
+            req.getRequestDispatcher("/inputmeal.jsp").forward(req, resp);
+            return;
         }
 
         if (action.equals("new")) {
-            mealMapDao.create(new Meal(mealMapDao.mealDataArray.atomicCount.incrementAndGet(), localDateTime, description, calories));
+            req.setAttribute("action", action);
+            req.getRequestDispatcher("/inputmeal.jsp").forward(req, resp);
+            return;
+        }
+
+        if (action.equals("save") & (!req.getParameter("id").equals(""))) {
+            mealMapDao.update(new Meal(Integer.parseInt(req.getParameter("id")),
+                    LocalDateTime.parse(req.getParameter("datetime")),
+                    req.getParameter("description"),
+                    Integer.parseInt(req.getParameter("calories"))));
             resp.sendRedirect(req.getContextPath() + "/meals");
+            return;
+        }
+
+        if (action.equals("save") & req.getParameter("id").equals("")) {
+            {
+                mealMapDao.create(new Meal(mealMapDao.mealDataArray.atomicCount.incrementAndGet(),
+                        LocalDateTime.parse(req.getParameter("datetime")),
+                        req.getParameter("description"),
+                        Integer.parseInt(req.getParameter("calories"))));
+                resp.sendRedirect(req.getContextPath() + "/meals");
+            }
         }
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        log.debug("redirect to meal3");
+        log.debug("redirect to meal");
 
         List<MealTo> mealList = MealsUtil.getFiltered(mealMapDao.getAll(), LocalTime.MIN,
                 LocalTime.MAX, MealsUtil.getDefaultCaloriesPerDay());

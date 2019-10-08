@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jstl/fmt" %>
 <%@ taglib prefix="javatime" uri="http://sargue.net/jsptags/time" %>
+<%--@elvariable id="meal" type="ru.javawebinar.topjava.model.MealTo"--%>
 
 
 <html>
@@ -26,57 +27,37 @@
     </tr>
     </thead>
     <tbody>
+
+
     <c:forEach var="meal" items="${requestScope.mealList}">
         <form action="${pageContext.request.contextPath}/meals" method="post">
             <tr style="background-color:${(meal.excess ? 'red' : 'green' )}">
 
                 <td>
+                    <input type="hidden" name="id" value="${meal.id}">
                         ${meal.id}
-                    <input type="hidden" name="id" value="${meal.id}"/></p>
                 </td>
-                <td>
-                    <javatime:format value="${meal.dateTime}" style="MM"/>
-                    <input type="datetime-local" name="datetime" value="${meal.dateTime}"/></p>
-
-                </td>
-                <td>
-                        ${meal.description}
-                    <input type="text" name="description" value="${meal.description}"/></p>
-                </td>
-                <td>
-                        ${meal.calories}
-                    <input type="text" name="calories" value="${meal.calories}"/></p>
-                </td>
+                <td><javatime:format value="${meal.dateTime}" style="MM"/></td>
+                <td> ${meal.description} </td>
+                <td> ${meal.calories} </td>
                 <td>
                     <input type="submit" name="button" value="edit"/>
                 </td>
                 <td>
                     <input type="submit" name="button" value="delete"/>
                 </td>
-
+            <tr>
         </form>
     </c:forEach>
-    <form action="${pageContext.request.contextPath}/meals" method="post">
-    <tr>
-        <td>
-            <input type="hidden" name="id" /></p>
-        </td>
-        <td>
-            <input type="datetime-local" name="datetime" /></p>
 
-        </td>
-        <td>
-            <input type="text" name="description" /></p>
-        </td>
-        <td>
-            <input type="text" name="calories" /></p>
-        </td>
-        <td>
+
+    <td>
+        <form action="${pageContext.request.contextPath}/meals" method="post">
             <input type="submit" name="button" value="new"/>
-        </td>
-
+        </form>
+    </td>
     </tr>
-    </form>
+
     </tbody>
 </table>
 </body>
