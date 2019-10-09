@@ -13,15 +13,15 @@ public class Meal {
 
     private int id;
 
-    public int getId() {
-        return id;
-    }
+    public Meal(LocalDateTime dateTime, String description, int calories) {
 
-    public Meal(int id, LocalDateTime dateTime, String description, int calories) {
-        this.id = id;
         this.dateTime = dateTime;
         this.description = description;
         this.calories = calories;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setDateTime(LocalDateTime dateTime) {
@@ -54,5 +54,9 @@ public class Meal {
 
     public LocalTime getTime() {
         return dateTime.toLocalTime();
+    }
+
+    public int getId() {
+        return id;
     }
 }
