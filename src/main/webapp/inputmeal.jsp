@@ -17,8 +17,8 @@
 <form method="post" action="<c:url value="/meals"/>">
     <input type="hidden" name="action" value="${action}">
 
-    <label for="id"><b>id</b></label><br>
-    <input id="id" name="id" value="${meal.id}" readonly>
+
+    <input type="hidden" name="id" value="${meal.id}" readonly>
 
     <br><label for="datetime"><b>datetime</b></label><br>
     <input id="datetime" name="datetime" type="datetime-local" value="${meal.dateTime}">

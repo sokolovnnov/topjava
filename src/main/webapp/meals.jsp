@@ -4,7 +4,6 @@
 <%@ taglib prefix="javatime" uri="http://sargue.net/jsptags/time" %>
 <%--@elvariable id="meal" type="ru.javawebinar.topjava.model.MealTo"--%>
 
-
 <html>
 <head>
     <title>Meal</title>
@@ -14,11 +13,28 @@
 <hr>
 <h2>Meal</h2>
 
+<style>
+    table {
+        border-collapse: collapse;
+        text-align: center;
+    }
+    th, td:first-child {
+        background: #AFCDE7;
+        padding: 10px 20px;
+    }
+    th, td {
+        border-style: solid;
+        border-width: 0 1px 1px 0;
+        border-color: white;
+    }
+    td {
+        background: #D8E6F3;
+    }
+</style>
 
-<table>
+<table >
     <thead>
     <tr>
-        <th>ID</th>
         <th>Дата/Время</th>
         <th>Описание</th>
         <th>Калории</th>
@@ -28,15 +44,12 @@
     </thead>
     <tbody>
 
-
     <c:forEach var="meal" items="${requestScope.mealList}">
         <form action="${pageContext.request.contextPath}/meals" method="post">
-            <tr style="background-color:${(meal.excess ? 'red' : 'green' )}">
+            <tr style="color:${(meal.excess ? 'Salmon' : 'Green' )}">
+                <input type="hidden" name="id" value="${meal.id}">
+                        <%--${meal.id}--%>
 
-                <td>
-                    <input type="hidden" name="id" value="${meal.id}">
-                        ${meal.id}
-                </td>
                 <td><javatime:format value="${meal.dateTime}" style="MM"/></td>
                 <td> ${meal.description} </td>
                 <td> ${meal.calories} </td>
@@ -49,7 +62,6 @@
             <tr>
         </form>
     </c:forEach>
-
 
     <td>
         <form action="${pageContext.request.contextPath}/meals" method="post">

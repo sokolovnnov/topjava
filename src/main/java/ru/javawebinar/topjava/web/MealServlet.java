@@ -22,51 +22,43 @@ public class MealServlet extends HttpServlet {
 
     private MealMapDao mealMapDao = new MealMapDao();
 
-    //todo switch!!
-
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         req.setCharacterEncoding("utf-8");
 
         String action = req.getParameter("button");
-
-        if (action.equals("delete")) {
-            int id = Integer.parseInt(req.getParameter("id"));
-            mealMapDao.delete(mealMapDao.getById(id));
-            resp.sendRedirect(req.getContextPath() + "/meals");
-            return;
-        }
-
-        if (action.equals("edit")) {
-            int id = Integer.parseInt(req.getParameter("id"));
-            Meal mealForUpd = mealMapDao.getById(id);
-            req.setAttribute("mealForUpd", mealForUpd);
-            req.setAttribute("action", action);
-            req.getRequestDispatcher("/inputmeal.jsp").forward(req, resp);
-            return;
-        }
-
-        if (action.equals("new")) {
-            req.setAttribute("action", action);
-            req.getRequestDispatcher("/inputmeal.jsp").forward(req, resp);
-            return;
-        }
-
-        if (action.equals("save") & (!req.getParameter("id").equals(""))) {
-            mealMapDao.update(new Meal(Integer.parseInt(req.getParameter("id")),
-                    LocalDateTime.parse(req.getParameter("datetime")),
-                    req.getParameter("description"),
-                    Integer.parseInt(req.getParameter("calories"))));
-            resp.sendRedirect(req.getContextPath() + "/meals");
-            return;
-        }
-
-        if (action.equals("save") & req.getParameter("id").equals("")) {
-            {
-                mealMapDao.create(new Meal(mealMapDao.mealDataArray.atomicCount.incrementAndGet(),
-                        LocalDateTime.parse(req.getParameter("datetime")),
+        switch (action){
+            case ("delete"):{
+                int id = Integer.parseInt(req.getParameter("id"));
+                mealMapDao.delete(mealMapDao.getById(id));
+                resp.sendRedirect(req.getContextPath() + "/meals");
+                break;
+            }
+            case ("edit"): {
+                int id = Integer.parseInt(req.getParameter("id"));
+                Meal mealForUpd = mealMapDao.getById(id);
+                req.setAttribute("mealForUpd", mealForUpd);
+                req.setAttribute("action", action);
+                req.getRequestDispatcher("/inputmeal.jsp").forward(req, resp);
+                break;
+            }
+            case ("new"): {
+                req.setAttribute("action", action);
+                req.getRequestDispatcher("/inputmeal.jsp").forward(req, resp);
+                break;
+            }
+            case ("save"): {
+                Meal mealForUpd = new Meal(LocalDateTime.parse(req.getParameter("datetime")),
                         req.getParameter("description"),
-                        Integer.parseInt(req.getParameter("calories"))));
+                        Integer.parseInt(req.getParameter("calories")));
+
+                if (req.getParameter("id").equals("")){ // new meal
+                    mealMapDao.create(mealForUpd);
+                }
+                else { // update meal
+                    mealForUpd.setId(Integer.parseInt(req.getParameter("id")));
+                    mealMapDao.update(mealForUpd);
+                }
                 resp.sendRedirect(req.getContextPath() + "/meals");
             }
         }
