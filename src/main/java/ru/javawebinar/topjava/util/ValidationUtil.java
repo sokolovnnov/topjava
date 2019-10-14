@@ -7,15 +7,15 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 public class ValidationUtil {
 
     public static <T> T checkNotFoundWithId(T object, int id) {
-        return checkNotFound(object, "id=" + id);
+        return checkNotFound(object, "id=" + id);  //если найден то его и возвращаем
     }
 
     public static void checkNotFoundWithId(boolean found, int id) {
-        checkNotFound(found, "id=" + id);
+        checkNotFound(found, "id=" + id);// для проброса исключения
     }
 
     public static <T> T checkNotFound(T object, String msg) {
-        checkNotFound(object != null, msg);
+        checkNotFound(object != null, msg);    // если объект=нул, то идем в метод ниже и кидаем NFE
         return object;
     }
 
