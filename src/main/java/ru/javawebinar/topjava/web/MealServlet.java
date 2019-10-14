@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.inmemory.InMemoryMealRepository;
 import ru.javawebinar.topjava.service.MealService;
+import ru.javawebinar.topjava.util.DateTimeData;
+import ru.javawebinar.topjava.util.DateTimeUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -13,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
@@ -22,6 +25,8 @@ public class MealServlet extends HttpServlet {
     private MealService mealService = new MealService(new InMemoryMealRepository());
     //private MealRepository repository;
     int userId = SecurityUtil.getAuthUserId();
+
+    DateTimeData dateTimeData = new DateTimeData();
 //    public static int getUserId() {
 //        return userId;
 //    }
@@ -53,6 +58,7 @@ public class MealServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
         userId = SecurityUtil.getAuthUserId();
+
 //        LocalDate sd;
 //        if (request.getParameter("startdate").equals("")) sd = LocalDate.MIN;
 //        else sd = LocalDate.parse(request.getParameter("startdate"));
@@ -71,18 +77,22 @@ public class MealServlet extends HttpServlet {
 //                request.getRequestDispatcher("/meals.jsp").forward(request, response);
 //                break;
             case "datefilter":
+            case "timefilter":
                 log.info("Filter {}");
                 log.info("startdate = " + request.getParameter("startdate"));
                 log.info("endtdate = " + request.getParameter("enddate"));
-                LocalDate sd;
-                if (request.getParameter("startdate").equals("")) sd = LocalDate.MIN;
-                else sd = LocalDate.parse(request.getParameter("startdate"));
-                LocalDate ed;
-                if (request.getParameter("enddate").equals("")) ed = LocalDate.MAX;
-                else ed = LocalDate.parse(request.getParameter("enddate"));
-                log.debug("userId in servlet before filter: " +userId);
+                log.info("startime = " + request.getParameter("starttime"));
+                log.info("endttime = " + request.getParameter("endtime"));
+
+//                LocalDate sd;
+//                if (request.getParameter("startdate").equals("")) sd = LocalDate.MIN;
+//                else sd = LocalDate.parse(request.getParameter("startdate"));
+//                LocalDate ed;
+//                if (request.getParameter("enddate").equals("")) ed = LocalDate.MAX;
+//                else ed = LocalDate.parse(request.getParameter("enddate"));
+                log.debug("userId in servlet before filter: " + userId);
                 request.setAttribute("meals",
-                        mealService.getWithFilter(userId, sd, ed, 2000));
+                        mealService.getWithFilter(userId, getDateTimeForFilter(request), 2000));
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
 //            case "timefilter":
@@ -103,7 +113,7 @@ public class MealServlet extends HttpServlet {
             case "delete":
                 int id = getId(request);
                 log.info("Delete {}", id);
-                log.debug("userId in del = " + userId + "id: "+ id);
+                log.debug("userId in del = " + userId + "id: " + id);
                 mealService.delete(userId, id); //
                 //repository.delete(id);
                 response.sendRedirect("meals");
@@ -129,7 +139,7 @@ public class MealServlet extends HttpServlet {
 //                else ed1 = LocalDate.parse(request.getParameter("enddate"));
 
                 request.setAttribute("meals",
-                        mealService.getWithFilter(userId, LocalDate.MIN, LocalDate.MAX, 2000));
+                        mealService.getWithFilter(userId, getDateTimeForFilter(request), 2000));
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
 
 //                log.info("getAll");
@@ -157,5 +167,29 @@ public class MealServlet extends HttpServlet {
         String paramId = Objects.requireNonNull(request.getParameter("id"));
         log.debug("id from reuest = " + paramId);
         return Integer.parseInt(paramId);
+    }
+
+    DateTimeData getDateTimeForFilter(HttpServletRequest request) {
+        if (request.getParameter("startdate") == null || request.getParameter("startdate").equals(""))
+            dateTimeData.setStartDate(LocalDate.MIN);
+        else
+            dateTimeData.setStartDate(LocalDate.parse(request.getParameter("startdate")));
+
+        if (request.getParameter("enddate") == null || request.getParameter("enddate").equals(""))
+            dateTimeData.setEndDate(LocalDate.MAX);
+        else
+            dateTimeData.setEndDate(LocalDate.parse(request.getParameter("enddate")));
+
+        if (request.getParameter("starttime") == null || request.getParameter("starttime").equals(""))
+            dateTimeData.setStartTime(LocalTime.MIN);
+        else
+            dateTimeData.setStartTime(LocalTime.parse(request.getParameter("starttime")));
+
+        if (request.getParameter("endtime") == null || request.getParameter("endtime").equals(""))
+            dateTimeData.setEndTime(LocalTime.MAX);
+        else
+            dateTimeData.setEndTime(LocalTime.parse(request.getParameter("endtime")));
+
+        return dateTimeData;
     }
 }

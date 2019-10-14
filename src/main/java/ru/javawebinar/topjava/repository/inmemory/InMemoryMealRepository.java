@@ -12,6 +12,7 @@ import ru.javawebinar.topjava.web.MealServlet;
 import ru.javawebinar.topjava.web.SecurityUtil;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,7 @@ public class InMemoryMealRepository implements MealRepository {
     public Meal save(Meal meal) {
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
-            meal.setUserId(SecurityUtil.getAuthUserId()); //todo ИЗМЕНИТЬ!!!!!!!!!!!!!!!!!
+            meal.setUserId(SecurityUtil.getAuthUserId());
             log.debug("save in repo, id = "+ meal.getId() + ", userId = " + meal.getUserId());
             repository.put(meal.getId(), meal);
             return meal;
@@ -86,12 +87,18 @@ public class InMemoryMealRepository implements MealRepository {
     }
 
     @Override
-    public Collection<Meal> getWithFilter(int userId, LocalDate startDate, LocalDate endDate){
+    public Collection<Meal> getWithFilter(int userId, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime){
         log.debug("before filter in InMemoryMealRepozitory");
         log.debug("userId = " + userId);
         log.debug(getAll().size()+ " ++");
+        log.debug("Start date: " + startDate);
+        log.debug("End date: " + endDate);
+        log.debug("Start time: " + startTime);
+        log.debug("End time: " + endTime);
+
         List<Meal> result = getAll().stream()
                 .filter(meal -> meal.getUserId() == userId)
+                .filter(meal -> DateTimeUtil.isBetween(meal.getTime(), startTime, endTime))
                 .filter(meal -> DateTimeUtil.isBetweenDate(meal.getDate(), startDate, endDate))
                 .collect(Collectors.toList());
         if (result.size() == 0) {

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.to.MealTo;
+import ru.javawebinar.topjava.util.DateTimeData;
 import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
 import ru.javawebinar.topjava.web.MealServlet;
@@ -72,12 +73,13 @@ public class MealService {
         else return null;
     }
 
-    public Collection<MealTo> getWithFilter(int userId, LocalDate startDate, LocalDate endDate, int caloriesPerDay){
+    public Collection<MealTo> getWithFilter(int userId, DateTimeData dateTimeData, int caloriesPerDay){
         log.debug("before filter in MealService");
-//        if (startDate == null) startDate = LocalDate.MIN;
-//        if (endDate == null) endDate = LocalDate.MAX;
+
         List<MealTo> result;
-        result = MealsUtil.getTos(repository.getWithFilter(userId, startDate, endDate), caloriesPerDay);
+        result = MealsUtil.getTos(repository.getWithFilter
+                (userId, dateTimeData.getStartDate(), dateTimeData.getEndDate(),
+                dateTimeData.getStartTime(), dateTimeData.getEndTime()), caloriesPerDay);
         log.debug(result.size()+"");
         return result;
     }
