@@ -41,10 +41,10 @@ public class InMemoryUserRepository implements UserRepository {
         return repository.get(id);
     }
 
-    private Comparator<User> comparator = Comparator.comparing(user -> user.getName());
     @Override
     public List<User> getAll() {
         log.info("getAll");
+        Comparator<User> comparator = Comparator.comparing((User user) -> user.getName()).thenComparing(user -> user.getId());
         return repository.values().stream()
                 .sorted(comparator)
                 .collect(Collectors.toList());

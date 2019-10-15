@@ -75,7 +75,7 @@ public class InMemoryMealRepository implements MealRepository {
 
         List<Meal> result = getAll().stream()
                 .filter(meal -> meal.getUserId() == userId)
-                .filter(meal -> DateTimeUtil.isBetweenDate(meal.getDate(), startDate, endDate))
+                .filter(meal -> DateTimeUtil.isBetween(meal.getDate(), startDate, endDate))
                 .collect(Collectors.toList());
         if (result.size() == 0) {
             log.debug("meal's list is empty for userId:" + userId);
