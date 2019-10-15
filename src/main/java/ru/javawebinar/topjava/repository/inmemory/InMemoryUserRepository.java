@@ -27,7 +27,7 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public User save(User user) {
         log.info("save {}", user);
-        if (user.isNew()){
+        if (user.isNew()) {
             user.setId(this.counter.incrementAndGet());
             repository.put(user.getId(), user);
             return user;
@@ -41,16 +41,25 @@ public class InMemoryUserRepository implements UserRepository {
         return repository.get(id);
     }
 
+    private Comparator<User> comparator = Comparator.comparing(user -> user.getName());
     @Override
     public List<User> getAll() {
         log.info("getAll");
-        return repository.values().stream().sorted().collect(Collectors.toList()); //todo add comparator
+        return repository.values().stream()
+                .sorted(comparator)
+                .collect(Collectors.toList());
     }
 
     @Override
     public User getByEmail(String email) {
         log.info("getByEmail {}", email);
-        return repository.values().stream().//anyMatch(user -> user.getEmail().equals(email))
-        filter(u -> u.getEmail().equals(email)).findFirst().orElse(null);
+        return repository.values().stream()
+                .filter(u -> u.getEmail().equals(email))
+                .findFirst()
+                .orElse(null);
     }
+
+
+
+
 }

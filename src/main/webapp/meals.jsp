@@ -29,10 +29,8 @@
 
     <label for="enddate"><b>end</b></label>
     <input id="enddate" name="enddate" type="date">
-    <input type="submit" value="Фильровать"/>
-</form>
 
-<form method="get" action="<c:url value="/meals"/>">
+<br>
     Фильтровать время:
     <input name="action" value="timefilter" type="hidden">
     <label for="starttime"><b>start</b></label>

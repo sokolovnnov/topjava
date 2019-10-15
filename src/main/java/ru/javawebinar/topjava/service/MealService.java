@@ -10,27 +10,21 @@ import ru.javawebinar.topjava.to.MealTo;
 import ru.javawebinar.topjava.util.DateTimeData;
 import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
-import ru.javawebinar.topjava.web.MealServlet;
-
-import java.time.LocalDate;
+import ru.javawebinar.topjava.util.exception.NotFoundException;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
+//todo ==>>  4.5: в MealService постараться сделать в каждом методе только одни запрос к MealRepository
+
 
 @Service
 public class MealService {
-    private static final Logger log = LoggerFactory.getLogger(MealServlet.class);
+    private static final Logger log = LoggerFactory.getLogger(MealService.class);
 
-    private MealRepository repository;
-
-
-    //todo ==>>
-    // СДЕЛАНО!: 4.3: если еда не принадлежит авторизированному пользователю или отсутствует, в MealService бросать NotFoundException
-    // -
-    // 4.5: в MealService постараться сделать в каждом методе только одни запрос к MealRepository
-    // -
-    // 4.4: конвертацию в MealTo можно делать как в слое web, так и в service
+    private final MealRepository repository;
 
     @Autowired
     public MealService(MealRepository repository) {
@@ -38,54 +32,55 @@ public class MealService {
     }
 
 
-    public Meal create(Meal meal) {//для новой еды userId уже присвоен в контроллере
+
+    public Meal create(int authUserId, Meal meal) {
+        log.debug("in create, userId: " + meal.getUserId() + "  - " + authUserId);
+        if (meal.getUserId() != null & meal.getId() != null)
+        checkUserId(authUserId, meal.getId());
+
         return repository.save(meal);
     }
 
-    public boolean delete(int userId, int id) {//ok
-        if (checkUserId(userId, id)) {
-            log.debug("Delete: " + id);
-            checkNotFoundWithId(repository.delete(id), id);
-            return true;
-        } else return false;
+    public boolean delete(int autUserId, int id) {
+        checkUserId(autUserId, id);
+        log.debug("Delete: " + id);
+        checkNotFoundWithId(repository.delete(id), id);
+        return true;
     }
 
-    public Meal get(int userId, int id) {//ok
-        if (checkUserId(userId, id))
-            return checkNotFoundWithId(repository.get(id), id);
-        else return null;
+    public Meal get(int autUserId, int id) {
+        log.debug("in get()");
+        checkUserId(autUserId, id);
+        return checkNotFoundWithId(repository.get(id), id);
     }
 
-    // отдает всю еду всех пользователей
-    public List<MealTo> getAll(int caloriesPerDay) {//todo СДЕЛАНО: сделать конвертацию в mealTo
-
+    public List<MealTo> getAll(int caloriesPerDay) {
         return MealsUtil.getTos(repository.getAll(), caloriesPerDay);
     }
 
-    public List<MealTo> getAllbyUser(int userId, int caloriesPerDay) {//todo СДЕЛАНО: сделать конвертацию в mealTo
+    private Comparator<MealTo> comparator = Comparator.comparing(mealTo -> mealTo.getDateTime());
 
-        return MealsUtil.getTos(repository.getAllbyUser(userId), caloriesPerDay);
-    }
-
-    public Meal update(int userId, Meal meal) {//ok
-        if (checkUserId(userId, meal.getId()))
-            return checkNotFoundWithId(repository.save(meal), meal.getId());
-        else return null;
-    }
-
-    public Collection<MealTo> getWithFilter(int userId, DateTimeData dateTimeData, int caloriesPerDay){
+    public Collection<MealTo> getWithFilter(int userId, DateTimeData dateTimeData, int caloriesPerDay) {
         log.debug("before filter in MealService");
 
-        List<MealTo> result;
-        result = MealsUtil.getTos(repository.getWithFilter
+        List<MealTo> result = MealsUtil.getTos(repository.getWithFilter
                 (userId, dateTimeData.getStartDate(), dateTimeData.getEndDate(),
-                dateTimeData.getStartTime(), dateTimeData.getEndTime()), caloriesPerDay);
-        log.debug(result.size()+"");
-        return result;
+                        dateTimeData.getStartTime(), dateTimeData.getEndTime()), caloriesPerDay);
+
+        log.debug(result.size() + "");
+        return result.stream()
+                .filter(mealTo -> DateTimeUtil.isBetween(mealTo.getDateTime().toLocalTime(),
+                        dateTimeData.getStartTime(), dateTimeData.getEndTime()))
+                .sorted(comparator.reversed())
+                .collect(Collectors.toList());
     }
 
-    private boolean checkUserId(Integer userId, Integer mealId) {
-        return userId.equals(repository.get(mealId).getUserId());
+    private void checkUserId(int authUserId, int mealId) {
+        log.debug("mealId from method: " + mealId + "  aId: " + authUserId);
+        //  log.debug("Check ID ==>  UserId: " + userId + " , Meal.UserId = " + repository.get(mealId).getUserId());
+        if (repository.get(mealId) == null || authUserId != repository.get(mealId).getUserId() ) {
+            throw new NotFoundException("NotFoundException!!!!!!!!!");
+        }
     }
 
 }

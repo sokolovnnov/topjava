@@ -10,8 +10,6 @@ public interface MealRepository {
     // null if not found, when updated
     Meal save(Meal meal);
 
-//    Meal save(Meal meal, int userId);
-
     // false if not found
     boolean delete(int id);
 
@@ -19,8 +17,6 @@ public interface MealRepository {
     Meal get(int id);
 
     Collection<Meal> getAll();
-
-    Collection<Meal> getAllbyUser(int userId);
 
     Collection<Meal> getWithFilter(int userId, LocalDate startDate, LocalDate endDate,
                                    LocalTime startTime, LocalTime endTime);
