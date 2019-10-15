@@ -17,13 +17,13 @@
     </style>
 </head>
 <body>
-<a href="users.jsp">Change user</a>
+<a href="index.html">Change user</a>
 <h2>Meals</h2>
 <a href="meals?action=create">Add Meal</a>
 
 <form method="get" action="<c:url value="/meals"/>">
     Фильтровать даты:
-    <input name="action" value="datefilter" type="hidden">
+    <input name="action" value="filter" type="hidden">
     <label for="startdate"><b>start</b></label>
     <input id="startdate" name="startdate" type="date">
 
@@ -32,7 +32,7 @@
 
 <br>
     Фильтровать время:
-    <input name="action" value="timefilter" type="hidden">
+
     <label for="starttime"><b>start</b></label>
     <input id="starttime" name="starttime" type="time">
 

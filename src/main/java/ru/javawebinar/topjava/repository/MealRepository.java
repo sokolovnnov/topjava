@@ -8,16 +8,15 @@ import java.util.Collection;
 
 public interface MealRepository {
     // null if not found, when updated
-    Meal save(Meal meal);
+    Meal save(int authUserId, Meal meal);
 
     // false if not found
-    boolean delete(int id);
+    boolean delete(int authUserId, int id);
 
     // null if not found
-    Meal get(int id);
+    Meal get(int authUserId, int id);
 
-    Collection<Meal> getAll();
+    Collection<Meal> getAll(int authUserId);
 
-    Collection<Meal> getWithFilter(int userId, LocalDate startDate, LocalDate endDate,
-                                   LocalTime startTime, LocalTime endTime);
+    Collection<Meal> getWithFilter(int authUserId, LocalDate startDate, LocalDate endDate);
 }

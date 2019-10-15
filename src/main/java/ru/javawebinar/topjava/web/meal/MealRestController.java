@@ -9,14 +9,14 @@ import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.to.MealTo;
 import ru.javawebinar.topjava.util.DateTimeData;
 import ru.javawebinar.topjava.web.SecurityUtil;
-
 import java.util.Collection;
 import java.util.List;
 
+
 @Controller
 public class MealRestController {
-    private static final Logger log = LoggerFactory.getLogger(MealRestController.class);
 
+    private static final Logger log = LoggerFactory.getLogger(MealRestController.class);
     private final MealService service;
 
     @Autowired
@@ -24,38 +24,26 @@ public class MealRestController {
         this.service = service;
     }
 
-    public Meal create(int autUserId, Meal meal) {
+    public Meal create(Meal meal) {
         meal.setUserId(SecurityUtil.getAuthUserId());
-        return service.create(autUserId, meal);
+        return service.create(SecurityUtil.getAuthUserId(), meal);
     }
 
-    public boolean delete(int autUserId, int id) {
-           return service.delete(autUserId, id);
+    public boolean delete(int id) {
+           return service.delete(SecurityUtil.getAuthUserId(), id);
     }
 
-    public Meal get(int autUserId, int id) {
-        log.debug("in get()");
-            return service.get(autUserId, id);
+    public Meal get(int id) {
+            return service.get(SecurityUtil.getAuthUserId(), id);
     }
 
-    // отдает всю еду всех пользователей
-    public List<MealTo> getAll(int caloriesPerDay) {
-        return service.getAll(caloriesPerDay);
+    public List<MealTo> getAll() {
+        return service.getAll(SecurityUtil.getAuthUserId(), SecurityUtil.authUserCaloriesPerDay());
     }
 
-    public Collection<MealTo> getWithFilter(int userId, DateTimeData dateTimeData, int caloriesPerDay){
-        return service.getWithFilter(userId, dateTimeData, caloriesPerDay);
+    public Collection<MealTo> getWithFilter(DateTimeData dateTimeData){
+//        log.debug("getWithFilter autUser: " + autUserId);
+        return service.getWithFilter(SecurityUtil.getAuthUserId(), dateTimeData, SecurityUtil.authUserCaloriesPerDay());
     }
 
 }
-//todo
-// Реализация 'MealRestController' должен уметь обрабатывать запросы:
-//    5.1: Отдать свою еду (для отображения в таблице, формат List<MealTo>), запрос БЕЗ параметров
-//    5.2: Отдать свою еду, отфильтрованную по startDate, startTime, endDate, endTime
-//    5.3: Отдать/удалить свою еду по id, параметр запроса - id еды. Если еда с этим id чужая или отсутствует - NotFoundException
-//    5.4: Сохранить/обновить еду, параметр запроса - Meal. Если обновляемая еда с этим id чужая или отсутствует - NotFoundException
-//    5.5: Сервлет мы удалим, а контроллер останется, поэтому возвращать List<MealTo> надо из контроллера.
-//          И userId принимать в контроллере НЕЛЬЗЯ (иначе - для чего аторизация?).
-//    5.6: В REST при update принято передавать id (см. AdminRestController.update)
-//    5.7: Сделайте отдельный getAll без применения фильтра
-// 6: Проверьте корректную обработку пустых значений date и time в контроллере

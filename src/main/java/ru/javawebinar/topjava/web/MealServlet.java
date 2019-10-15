@@ -21,16 +21,25 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 
+//todo:     Покажи, пожалуйста, где это в коде))
+//           - при forward  данные фильтра остаются (мы же forward делаем, а не redirect),
+//           не надо эти данные повторно сеттить как аттрибут в request.setAttribute (см., как использовать param в jsp)
+
 public class MealServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(MealServlet.class);
-    private int authUserId = SecurityUtil.getAuthUserId();
 
+    private ConfigurableApplicationContext appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml");
     private MealRestController controller;
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        appCtx.close();
+    }
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        ConfigurableApplicationContext appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml");
         controller = appCtx.getBean(MealRestController.class);
     }
 
@@ -39,62 +48,52 @@ public class MealServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-        authUserId = SecurityUtil.getAuthUserId();
         String id = request.getParameter("id");
 
-        Meal meal = new Meal(authUserId, id.isEmpty() ? null : Integer.valueOf(id),
+        Meal meal = new Meal(null, id.isEmpty() ? null : Integer.valueOf(id),
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")));
 
         log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
-        controller.create(authUserId, meal);
+        controller.create(meal);
         response.sendRedirect("meals");
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
-        authUserId = SecurityUtil.getAuthUserId();
 
         log.debug("in doGet");
         log.debug("parametr action in mealServlet = " + request.getParameter("action"));
 
         switch (action == null ? "all" : action) {
-            case "datefilter":
-            case "timefilter":
+            case "filter":
                 log.info("Filter {}");
-                log.info("startdate = " + request.getParameter("startdate"));
-                log.info("endtdate = " + request.getParameter("enddate"));
-                log.info("startime = " + request.getParameter("starttime"));
-                log.info("endttime = " + request.getParameter("endtime"));
-                log.debug("userId in servlet before filter: " + authUserId);
-
-                request.setAttribute("meals",
-                        controller.getWithFilter(authUserId, getDateTimeForFilter(request), SecurityUtil.authUserCaloriesPerDay()));
+//                log.info("startdate = " + request.getParameter("startdate"));
+//                log.info("endtdate = " + request.getParameter("enddate"));
+//                log.info("startime = " + request.getParameter("starttime"));
+//                log.info("endttime = " + request.getParameter("endtime"));
+                request.setAttribute("meals", controller.getWithFilter(getDateTimeForFilter(request)));
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
             case "delete":
                 int id = getId(request);
                 log.info("Delete {}", id);
-                log.debug("userId in del = " + authUserId + "id: " + id);
-                controller.delete(authUserId, id); //
-                //repository.delete(id);
+                controller.delete(id); //
                 response.sendRedirect("meals");
                 break;
             case "create":
             case "update":
                 final Meal meal = "create".equals(action) ?
                         new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 0) :
-                        controller.get(authUserId, getId(request));//
+                        controller.get(getId(request));//
                 log.debug("meal = " + meal);
-                log.debug("userId in create = " + authUserId);
                 request.setAttribute("meal", meal);
                 request.getRequestDispatcher("/mealForm.jsp").forward(request, response);
                 break;
             case "all":
-                request.setAttribute("meals",
-                        controller.getWithFilter(authUserId, getDateTimeForFilter(request), SecurityUtil.authUserCaloriesPerDay()));
+                request.setAttribute("meals", controller.getWithFilter(getDateTimeForFilter(request)));
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
             default:
         }
@@ -102,9 +101,11 @@ public class MealServlet extends HttpServlet {
 
     private int getId(HttpServletRequest request) {
         String paramId = Objects.requireNonNull(request.getParameter("id"));
-        log.debug("id from reuest = " + paramId);
+        log.debug("id from request = " + paramId);
         return Integer.parseInt(paramId);
     }
+
+
 
     private DateTimeData getDateTimeForFilter(HttpServletRequest request) {
         if (request.getParameter("startdate") == null || request.getParameter("startdate").equals(""))

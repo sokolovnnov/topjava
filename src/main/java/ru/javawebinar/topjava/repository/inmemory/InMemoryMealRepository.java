@@ -7,12 +7,10 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
-import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Collection;
-import java.util.List;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,63 +27,68 @@ public class InMemoryMealRepository implements MealRepository {
     private AtomicInteger counter = new AtomicInteger(0);
 
     {
-        MealsUtil.MEALS.forEach(this::save);
-        for (Meal meal : repository.values()) {
-            meal.setUserId(1);
-        }
+        MealsUtil.MEALS.forEach(meal -> save(1, meal));
     }
 
     @Override
-    public Meal save(Meal meal) {
+    public Meal save(int authUserId, Meal meal) {
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
+            meal.setUserId(authUserId);
             log.debug("save in repo, id = " + meal.getId() + ", userId = " + meal.getUserId());
             repository.put(meal.getId(), meal);
             return meal;
         }
         // treat case: update, but not present in storage
-        return repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);                                                                             //todo delete проверяет есть ли в мапе meal c таким id (первый параметр)
+        return repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);     //meal replace oldMeal                                                                         //todo delete проверяет есть ли в мапе meal c таким id (первый параметр)
     }                                                                                                                                                        //и заменяет value на meal (если есть), а если нет, то
 
     @Override
-    public boolean delete(int id) {
+    public boolean delete(int authUserId, int id) {
         log.debug("Delete: " + id);
-        return repository.remove(id) != null;
+        try {
+            if (!isCheckUserId(authUserId, id)) return false;
+            return repository.remove(id) != null;
+        }
+        catch (NullPointerException n){
+            return false;
+        }
     }
 
     @Override
-    public Meal get(int id) {
-        return repository.get(id);
+    public Meal get(int authUserId, int id) {
+        try {
+            if (!isCheckUserId(authUserId, id)) return null;
+            return repository.get(id);
+        }
+        catch (NullPointerException n) {
+            return null;
+        }
     }
 
     @Override
-    public Collection<Meal> getAll() {
-        return repository.values();
+    public Collection<Meal> getAll(int authUserId) {
+        return filterByUserId(authUserId);
     }
 
+    //возвращает List<Meal> для одного пользователя, обрезаный по датам, отсортированный наоборот
     @Override
-    public Collection<Meal> getWithFilter(int userId, LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
-        log.debug("before filter in InMemoryMealRepozitory");
-        log.debug("userId = " + userId);
-        log.debug(getAll().size() + " ++");
-        log.debug("Start date: " + startDate);
-        log.debug("End date: " + endDate);
-        log.debug("Start time: " + startTime);
-        log.debug("End time: " + endTime);
+    public Collection<Meal> getWithFilter(int authUserId, LocalDate startDate, LocalDate endDate) {
 
-        List<Meal> result = getAll().stream()
-                .filter(meal -> meal.getUserId() == userId)
+        return filterByUserId(authUserId).stream()
                 .filter(meal -> DateTimeUtil.isBetween(meal.getDate(), startDate, endDate))
                 .collect(Collectors.toList());
-        if (result.size() == 0) {
-            log.debug("meal's list is empty for userId:" + userId);
-            throw new NotFoundException("Empty list!");             //todo   Что нужно возвращать, когда список пуст?
+    }
 
-        } else {
-            log.debug(result.size() + "");
-            log.debug("User id in meal = " + result.get(0).getUserId());
-            return result;
-        }
+    private boolean isCheckUserId(int authUserId, int mealId) {
+        return authUserId == repository.get(mealId).getUserId();
+    }
+
+    private Collection<Meal> filterByUserId(int authUserId) {
+        return repository.values().stream()
+                .filter(meal -> meal.getUserId() == authUserId)
+                .sorted(Comparator.comparing((Meal meal) -> meal.getDateTime()).reversed())
+                .collect(Collectors.toList());
     }
 }
 
