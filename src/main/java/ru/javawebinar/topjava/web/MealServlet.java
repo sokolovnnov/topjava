@@ -20,11 +20,6 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
-
-//todo:     Покажи, пожалуйста, где это в коде))
-//           - при forward  данные фильтра остаются (мы же forward делаем, а не redirect),
-//           не надо эти данные повторно сеттить как аттрибут в request.setAttribute (см., как использовать param в jsp)
-
 public class MealServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(MealServlet.class);
 
@@ -49,6 +44,8 @@ public class MealServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         String id = request.getParameter("id");
+
+        if (!id.isEmpty()) controller.get(Integer.parseInt(id)).getUserId();
 
         Meal meal = new Meal(null, id.isEmpty() ? null : Integer.valueOf(id),
                 LocalDateTime.parse(request.getParameter("dateTime")),
@@ -75,6 +72,7 @@ public class MealServlet extends HttpServlet {
 //                log.info("startime = " + request.getParameter("starttime"));
 //                log.info("endttime = " + request.getParameter("endtime"));
                 request.setAttribute("meals", controller.getWithFilter(getDateTimeForFilter(request)));
+                request.setAttribute("startdate", dateTimeData.getStartDate());
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
             case "delete":
@@ -93,7 +91,7 @@ public class MealServlet extends HttpServlet {
                 request.getRequestDispatcher("/mealForm.jsp").forward(request, response);
                 break;
             case "all":
-                request.setAttribute("meals", controller.getWithFilter(getDateTimeForFilter(request)));
+                request.setAttribute("meals", controller.getAll());
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
             default:
         }

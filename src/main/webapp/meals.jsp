@@ -25,7 +25,7 @@
     Фильтровать даты:
     <input name="action" value="filter" type="hidden">
     <label for="startdate"><b>start</b></label>
-    <input id="startdate" name="startdate" type="date">
+    <input id="startdate" name="startdate" type="date" value="<%= request.getParameter("startdate") %>">
 
     <label for="enddate"><b>end</b></label>
     <input id="enddate" name="enddate" type="date">
