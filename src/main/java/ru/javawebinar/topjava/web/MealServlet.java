@@ -14,9 +14,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
@@ -37,8 +35,6 @@ public class MealServlet extends HttpServlet {
         super.init(config);
         controller = appCtx.getBean(MealRestController.class);
     }
-
-    private DateTimeData dateTimeData = new DateTimeData();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -63,15 +59,16 @@ public class MealServlet extends HttpServlet {
 
         log.debug("in doGet");
         log.debug("parametr action in mealServlet = " + request.getParameter("action"));
-
-        switch (action == null ? "all" : action) {
+        DateTimeData dateTimeData = new DateTimeData();
+        switch (action == null ? "filter" : action) {
             case "filter":
                 log.info("Filter {}");
 //                log.info("startdate = " + request.getParameter("startdate"));
 //                log.info("endtdate = " + request.getParameter("enddate"));
 //                log.info("startime = " + request.getParameter("starttime"));
 //                log.info("endttime = " + request.getParameter("endtime"));
-                request.setAttribute("meals", controller.getWithFilter(getDateTimeForFilter(request)));
+                dateTimeData = controller.getDateTimeForFilter(request);
+                request.setAttribute("meals", controller.getWithFilter(dateTimeData));
                 request.setAttribute("startdate", dateTimeData.getStartDate());
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
@@ -101,31 +98,5 @@ public class MealServlet extends HttpServlet {
         String paramId = Objects.requireNonNull(request.getParameter("id"));
         log.debug("id from request = " + paramId);
         return Integer.parseInt(paramId);
-    }
-
-
-
-    private DateTimeData getDateTimeForFilter(HttpServletRequest request) {
-        if (request.getParameter("startdate") == null || request.getParameter("startdate").equals(""))
-            dateTimeData.setStartDate(LocalDate.MIN);
-        else
-            dateTimeData.setStartDate(LocalDate.parse(request.getParameter("startdate")));
-
-        if (request.getParameter("enddate") == null || request.getParameter("enddate").equals(""))
-            dateTimeData.setEndDate(LocalDate.MAX);
-        else
-            dateTimeData.setEndDate(LocalDate.parse(request.getParameter("enddate")));
-
-        if (request.getParameter("starttime") == null || request.getParameter("starttime").equals(""))
-            dateTimeData.setStartTime(LocalTime.MIN);
-        else
-            dateTimeData.setStartTime(LocalTime.parse(request.getParameter("starttime")));
-
-        if (request.getParameter("endtime") == null || request.getParameter("endtime").equals(""))
-            dateTimeData.setEndTime(LocalTime.MAX);
-        else
-            dateTimeData.setEndTime(LocalTime.parse(request.getParameter("endtime")));
-
-        return dateTimeData;
     }
 }

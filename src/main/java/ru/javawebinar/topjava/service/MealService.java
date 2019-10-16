@@ -9,7 +9,6 @@ import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.to.MealTo;
 import ru.javawebinar.topjava.util.DateTimeData;
 import ru.javawebinar.topjava.util.MealsUtil;
-import java.util.Collection;
 import java.util.List;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
@@ -28,13 +27,17 @@ public class MealService {
 
     public Meal create(int authUserId, Meal meal) {
         log.debug("in create, userId: " + meal.getUserId() + "  - " + authUserId);
-        return repository.save(authUserId, meal); //no need check
+        return repository.create(authUserId, meal); //no need check
     }
 
-    public boolean delete(int autUserId, int id) {
+    public Meal update(int authUserId, int id, Meal meal) {
+        log.debug("in update, userId: " + meal.getUserId() + "  - " + authUserId);
+        return checkNotFoundWithId(repository.update(authUserId, id, meal), id);
+    }
+
+    public void delete(int autUserId, int id) {
         log.debug("Delete: " + id);
         checkNotFoundWithId(repository.delete(autUserId, id), id);
-        return true;
     }
 
     public Meal get(int autUserId, int id) {
@@ -46,9 +49,9 @@ public class MealService {
         return MealsUtil.getTos(repository.getAll(autUserId), caloriesPerDay);
     }
 
-    public Collection<MealTo> getWithFilter(int autUserId, DateTimeData dateTimeData, int caloriesPerDay) {
+    public List<MealTo> getWithFilter(int autUserId, DateTimeData dateTimeData, int caloriesPerDay) {
         return MealsUtil.getFilteredTos(repository.getWithFilter
-                (autUserId, dateTimeData.getStartDate(), dateTimeData.getEndDate())
-                , caloriesPerDay, dateTimeData.getStartTime(), dateTimeData.getEndTime());
+                (autUserId, dateTimeData.getStartDate(), dateTimeData.getEndDate()),
+                caloriesPerDay, dateTimeData.getStartTime(), dateTimeData.getEndTime());
     }
 }
