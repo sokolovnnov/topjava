@@ -16,6 +16,9 @@ import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
 
+import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
+import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
+
 @Controller
 public class MealRestController {
 
@@ -28,11 +31,13 @@ public class MealRestController {
     }
 
     public Meal create(Meal meal) {
-        meal.setUserId(SecurityUtil.getAuthUserId());
+        checkNew(meal);
+//        meal.setUserId(SecurityUtil.getAuthUserId());
         return service.create(SecurityUtil.getAuthUserId(), meal);
     }
 
     public Meal update(int id, Meal meal) {
+        assureIdConsistent(meal, id);
         return service.update(SecurityUtil.getAuthUserId(), id, meal);
     }
 

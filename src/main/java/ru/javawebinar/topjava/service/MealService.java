@@ -27,12 +27,12 @@ public class MealService {
 
     public Meal create(int authUserId, Meal meal) {
         log.debug("in create, userId: " + meal.getUserId() + "  - " + authUserId);
-        return repository.create(authUserId, meal); //no need check
+        return repository.save(authUserId, meal); //no need check
     }
 
     public Meal update(int authUserId, int id, Meal meal) {
-        log.debug("in update, userId: " + meal.getUserId() + "  - " + authUserId);
-        return checkNotFoundWithId(repository.update(authUserId, id, meal), id);
+       // log.debug("in update, userId: " + meal.getUserId() + "  - " + authUserId);
+        return checkNotFoundWithId(repository.save(authUserId, meal), id);
     }
 
     public void delete(int autUserId, int id) {

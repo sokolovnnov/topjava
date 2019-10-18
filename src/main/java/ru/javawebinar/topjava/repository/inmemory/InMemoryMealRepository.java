@@ -25,11 +25,11 @@ public class InMemoryMealRepository implements MealRepository {
     private AtomicInteger counter = new AtomicInteger(0);
 
     {
-        MealsUtil.MEALS.forEach(meal -> create(1, meal));
+        MealsUtil.MEALS.forEach(meal -> save(1, meal));
     }
 
     @Override
-    public Meal create(int authUserId, Meal meal) {
+    public Meal save(int authUserId, Meal meal) {
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
             meal.setUserId(authUserId);
@@ -41,11 +41,11 @@ public class InMemoryMealRepository implements MealRepository {
         return repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);                                               //meal replace oldMeal                                                                         //todo delete проверяет есть ли в мапе meal c таким id (первый параметр)
     }                                                                                                                          //и заменяет value на meal (если есть), а если нет, то
 
-    @Override
-    public Meal update(int authUserId, int id, Meal meal) {
-        if (isWrongUserId(authUserId, id)) return null;
-        return repository.computeIfPresent(meal.getId(), (mealId, oldMeal) -> meal);     //meal replace oldMeal                                                                         //todo delete проверяет есть ли в мапе meal c таким id (первый параметр)
-    }                                                                                                                                                        //и заменяет value на meal (если есть), а если нет, то
+//    @Override
+//    public Meal update(int authUserId, int id, Meal meal) {
+//        if (isWrongUserId(authUserId, id)) return null;
+//        return repository.computeIfPresent(meal.getId(), (mealId, oldMeal) -> meal);     //meal replace oldMeal                                                                         //todo delete проверяет есть ли в мапе meal c таким id (первый параметр)
+//    }                                                                                                                                                        //и заменяет value на meal (если есть), а если нет, то
 
     @Override
     public boolean delete(int authUserId, int id) {

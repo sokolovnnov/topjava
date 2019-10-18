@@ -4,7 +4,7 @@ package ru.javawebinar.topjava.util;
 import ru.javawebinar.topjava.model.AbstractBaseEntity;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
-public class ValidationUtil {
+public class ValidationUtil { //проверка есть ли объект с данным id
 
     public static <T> T checkNotFoundWithId(T object, int id) {
         return checkNotFound(object, "id=" + id);  //если найден то его и возвращаем
