@@ -34,19 +34,19 @@ public class JdbcMealRepository implements MealRepository {
                 .addValue("id", meal.getId())
                 .addValue("description", meal.getDescription())
                 .addValue("calories", meal.getCalories())
-                .addValue("timedate", meal.getDateTime());
+                .addValue("time_date", meal.getDateTime());
         if(meal.isNew()){
-            mapSqlParameterSource.addValue("userid", userId);
+            mapSqlParameterSource.addValue("user_id", userId);
             Number number = insertMeal.executeAndReturnKey(mapSqlParameterSource);
             meal.setId(number.intValue());
         }
         else {
             int update = jdbcTemplate.update("UPDATE meals " +
-                            "SET description = ?, calories = ?, timedate = ? " +
-                            "WHERE id = ? AND userid = ?",
+                            "SET description = ?, calories = ?, time_date = ? " +
+                            "WHERE id = ? AND user_id = ?",
                     mapSqlParameterSource.getValue("description"),
                     mapSqlParameterSource.getValue("calories"),
-                    mapSqlParameterSource.getValue("timedate"),
+                    mapSqlParameterSource.getValue("time_date"),
                     meal.getId(), userId);
             if (update == 0) return null;
         }
@@ -55,13 +55,13 @@ public class JdbcMealRepository implements MealRepository {
 
     @Override//ok
     public boolean delete(int id, int userId) {
-        return jdbcTemplate.update("DELETE from meals WHERE id=? and userid=?", id, userId) != 0;
+        return jdbcTemplate.update("DELETE from meals WHERE id=? and user_id=?", id, userId) != 0;
     }
 
     @Override//ok
     public Meal get(int id, int userId) {
         try {
-            return jdbcTemplate.queryForObject("SELECT * FROM meals WHERE id=? and userid=?", mealRowMapper, id, userId);
+            return jdbcTemplate.queryForObject("SELECT * FROM meals WHERE id=? and user_id=?", mealRowMapper, id, userId);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -69,18 +69,18 @@ public class JdbcMealRepository implements MealRepository {
 
     @Override//ok
     public List<Meal> getAll(int userId) {
-        return jdbcTemplate.query("SELECT * FROM meals WHERE userid=? ORDER BY timedate DESC", mealRowMapper, userId);
+        return jdbcTemplate.query("SELECT * FROM meals WHERE user_id=? ORDER BY time_date DESC", mealRowMapper, userId);
     }
 
     @Override
     public List<Meal> getBetween(LocalDateTime startDate, LocalDateTime endDate, int userId) {
         return jdbcTemplate.query(
                 "SELECT * FROM meals " +
-                        "WHERE userid =? AND timedate BETWEEN ? AND ? " +
-                        "ORDER BY timedate DESC", mealRowMapper, userId, startDate, endDate);
+                        "WHERE user_id =? AND time_date BETWEEN ? AND ? " +
+                        "ORDER BY time_date DESC", mealRowMapper, userId, startDate, endDate);
     }
 
-    public static final class MealRowMapper implements RowMapper<Meal> {
+    private static final class MealRowMapper implements RowMapper<Meal> {
 
         @Override
         public Meal mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -88,7 +88,7 @@ public class JdbcMealRepository implements MealRepository {
             meal.setId(rs.getInt("id"));
             meal.setDescription(rs.getString("description"));
             meal.setCalories(rs.getInt("calories"));
-            meal.setDateTime(rs.getObject("timedate", LocalDateTime.class));
+            meal.setDateTime(rs.getObject("time_date", LocalDateTime.class));
             return meal;
         }
     }
