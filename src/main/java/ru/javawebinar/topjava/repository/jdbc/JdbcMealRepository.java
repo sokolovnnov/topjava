@@ -30,7 +30,27 @@ public class JdbcMealRepository implements MealRepository {
 
     @Override
     public Meal save(Meal meal, int userId) {
-        return null;
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
+                .addValue("id", meal.getId())
+                .addValue("description", meal.getDescription())
+                .addValue("calories", meal.getCalories())
+                .addValue("timedate", meal.getDateTime());
+        if(meal.isNew()){
+            mapSqlParameterSource.addValue("userid", userId);
+            Number number = insertMeal.executeAndReturnKey(mapSqlParameterSource);
+            meal.setId(number.intValue());
+        }
+        else {
+            int update = jdbcTemplate.update("UPDATE meals " +
+                            "SET description = ?, calories = ?, timedate = ? " +
+                            "WHERE id = ? AND userid = ?",
+                    mapSqlParameterSource.getValue("description"),
+                    mapSqlParameterSource.getValue("calories"),
+                    mapSqlParameterSource.getValue("timedate"),
+                    meal.getId(), userId);
+            if (update == 0) return null;
+        }
+        return meal;
     }
 
     @Override//ok
