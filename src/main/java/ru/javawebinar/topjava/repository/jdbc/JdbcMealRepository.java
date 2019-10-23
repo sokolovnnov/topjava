@@ -2,6 +2,7 @@ package ru.javawebinar.topjava.repository.jdbc;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -17,7 +18,6 @@ import java.util.List;
 
 @Repository
 public class JdbcMealRepository implements MealRepository {
-
     private JdbcTemplate jdbcTemplate;
     private SimpleJdbcInsert insertMeal;
     private final MealRowMapper mealRowMapper = new MealRowMapper();
@@ -35,12 +35,11 @@ public class JdbcMealRepository implements MealRepository {
                 .addValue("description", meal.getDescription())
                 .addValue("calories", meal.getCalories())
                 .addValue("time_date", meal.getDateTime());
-        if(meal.isNew()){
+        if (meal.isNew()) {
             mapSqlParameterSource.addValue("user_id", userId);
             Number number = insertMeal.executeAndReturnKey(mapSqlParameterSource);
             meal.setId(number.intValue());
-        }
-        else {
+        } else {
             int update = jdbcTemplate.update("UPDATE meals " +
                             "SET description = ?, calories = ?, time_date = ? " +
                             "WHERE id = ? AND user_id = ?",
@@ -61,7 +60,8 @@ public class JdbcMealRepository implements MealRepository {
     @Override//ok
     public Meal get(int id, int userId) {
         try {
-            return jdbcTemplate.queryForObject("SELECT * FROM meals WHERE id=? and user_id=?", mealRowMapper, id, userId);
+            return DataAccessUtils.singleResult(jdbcTemplate.query("SELECT * FROM meals WHERE id=? and user_id=?",
+                    mealRowMapper, id, userId));
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

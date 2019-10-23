@@ -33,3 +33,5 @@ CREATE TABLE meals
   calories    INTEGER             DEFAULT 0 NOT NULL,
   time_date   TIMESTAMP WITHOUT TIME ZONE   NOT NULL
 );
+
+CREATE INDEX meal_user_id_date_index ON meals (user_id, time_date);

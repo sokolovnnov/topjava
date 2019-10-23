@@ -12,6 +12,7 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -54,7 +55,7 @@ public class MealServiceTest {
     @Test
     public void getAll() {
         List<Meal> all = mealService.getAll(100001);
-        assertMatch(all, /*MEAL1_USER0,  MEAL2_USER0,  MEAL3_USER0,*/ MEAL2_USER1,  MEAL3_USER1, MEAL1_USER1);
+        assertMatch(all, MEAL2_USER1,  MEAL3_USER1, MEAL1_USER1);
     }
 
     @Test
@@ -62,6 +63,19 @@ public class MealServiceTest {
     }
 
     @Test
+    public void test_delete() {
+        mealService.delete(MEAL1_USER1.getId(), 100001);
+        List<Meal> all = mealService.getAll(100001);
+        assertMatch(all, MEAL2_USER1,  MEAL3_USER1);
+    }
+
+    @Test
     public void create() {
+        Meal meal = new Meal(100002, LocalDateTime.of
+                (2014, 10, 19, 10, 23, 54),
+                "dinner cr", 201);
+        mealService.create(meal, 100001);
+        assertMatch(mealService.get(meal.getId(), 100001), meal);
     }
 }
+/*MEAL1_USER0,  MEAL2_USER0,  MEAL3_USER0,*/

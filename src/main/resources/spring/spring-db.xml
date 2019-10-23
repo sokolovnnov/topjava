@@ -23,8 +23,4 @@
         <constructor-arg ref="jdbcTemplate"/>
     </bean>
 
-    <!--<bean id="insertMeal" class="org.springframework.jdbc.core.simple.SimpleJdbcInsert">-->
-        <!--<constructor-arg ref="dataSource"/>-->
-    <!--</bean>-->
-
 </beans>
