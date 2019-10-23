@@ -71,7 +71,7 @@ public class MealServiceTest {
 
     @Test
     public void create() {
-        Meal meal = new Meal(100002, LocalDateTime.of
+        Meal meal = new Meal(LocalDateTime.of
                 (2014, 10, 19, 10, 23, 54),
                 "dinner cr", 201);
         mealService.create(meal, 100001);
