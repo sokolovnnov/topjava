@@ -59,12 +59,8 @@ public class JdbcMealRepository implements MealRepository {
 
     @Override//ok
     public Meal get(int id, int userId) {
-        try {
             return DataAccessUtils.singleResult(jdbcTemplate.query("SELECT * FROM meals WHERE id=? and user_id=?",
                     mealRowMapper, id, userId));
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
     }
 
     @Override//ok
