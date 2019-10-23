@@ -1,5 +1,5 @@
 DROP TABLE IF EXISTS user_roles;
-DROP TABLE IF EXISTS users CASCADE ;
+DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS meals;
 DROP SEQUENCE IF EXISTS global_seq;
 
@@ -28,8 +28,8 @@ CREATE TABLE user_roles
 CREATE TABLE meals
 (
   id          INTEGER PRIMARY KEY DEFAULT nextval('global_seq'),
-  user_id      INTEGER REFERENCES users (id) NOT NULL,
+  user_id     INTEGER REFERENCES users (id) ON DELETE SET NULL,
   description VARCHAR                       NOT NULL,
   calories    INTEGER             DEFAULT 0 NOT NULL,
-  time_date    TIMESTAMP WITHOUT TIME ZONE   NOT NULL
+  time_date   TIMESTAMP WITHOUT TIME ZONE   NOT NULL
 );
