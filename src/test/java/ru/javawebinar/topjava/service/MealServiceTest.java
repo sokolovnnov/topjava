@@ -1,6 +1,11 @@
 package ru.javawebinar.topjava.service;
 
+import org.junit.AssumptionViolatedException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.rules.Stopwatch;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -25,6 +30,18 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
+    @Rule
+    public final Stopwatch stopwatch = new Stopwatch() {
+        protected void finished(long nanos, Description description) {
+            System.out.println(description.getMethodName() + " - " + nanos / 1_000_000 + " ms");
+        }
+
+    };
+
+
     @Autowired
     private MealService service;
 
@@ -34,13 +51,15 @@ public class MealServiceTest {
         assertMatch(service.getAll(USER_ID), MEAL6, MEAL5, MEAL4, MEAL3, MEAL2);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test//(expected = NotFoundException.class)
     public void deleteNotFound() throws Exception {
+        thrown.expect(NotFoundException.class);
         service.delete(1, USER_ID);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test//(expected = NotFoundException.class)
     public void deleteNotOwn() throws Exception {
+        thrown.expect(NotFoundException.class);
         service.delete(MEAL1_ID, ADMIN_ID);
     }
 
@@ -59,8 +78,9 @@ public class MealServiceTest {
         assertMatch(actual, ADMIN_MEAL1);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test//(expected = NotFoundException.class)
     public void getNotFound() throws Exception {
+        thrown.expect(NotFoundException.class);
         service.get(1, USER_ID);
     }
 
