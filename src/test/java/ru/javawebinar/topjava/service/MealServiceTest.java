@@ -1,5 +1,7 @@
 package ru.javawebinar.topjava.service;
 
+import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
+import org.junit.AfterClass;
 import org.junit.AssumptionViolatedException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,6 +19,8 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.ArrayList;
+import java.util.List;
 
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
@@ -36,14 +40,23 @@ public class MealServiceTest {
     @Rule
     public final Stopwatch stopwatch = new Stopwatch() {
         protected void finished(long nanos, Description description) {
-            System.out.println(description.getMethodName() + " - " + nanos / 1_000_000 + " ms");
+            String res = description.getMethodName() + " - " + nanos / 1_000_000 + " ms";
+            System.out.println(res);
+            testResult.add(res);
         }
-
     };
-
 
     @Autowired
     private MealService service;
+
+    private static List<String> testResult = new ArrayList<>();
+
+    @AfterClass
+    public static void prRes(){
+        for (String s: testResult){
+            System.out.println(s);
+        }
+    }
 
     @Test
     public void delete() throws Exception {
@@ -51,13 +64,13 @@ public class MealServiceTest {
         assertMatch(service.getAll(USER_ID), MEAL6, MEAL5, MEAL4, MEAL3, MEAL2);
     }
 
-    @Test//(expected = NotFoundException.class)
+    @Test
     public void deleteNotFound() throws Exception {
         thrown.expect(NotFoundException.class);
         service.delete(1, USER_ID);
     }
 
-    @Test//(expected = NotFoundException.class)
+    @Test
     public void deleteNotOwn() throws Exception {
         thrown.expect(NotFoundException.class);
         service.delete(MEAL1_ID, ADMIN_ID);
@@ -78,7 +91,7 @@ public class MealServiceTest {
         assertMatch(actual, ADMIN_MEAL1);
     }
 
-    @Test//(expected = NotFoundException.class)
+    @Test
     public void getNotFound() throws Exception {
         thrown.expect(NotFoundException.class);
         service.get(1, USER_ID);
