@@ -4,6 +4,6 @@ import org.springframework.test.context.ActiveProfiles;
 import ru.javawebinar.topjava.Profiles;
 import ru.javawebinar.topjava.service.MealServiceTest;
 
-@ActiveProfiles(Profiles.DATAJPA)
+@ActiveProfiles({Profiles.DATAJPA})
 public class MealServiceDataJpaTest extends MealServiceTest {
 }
